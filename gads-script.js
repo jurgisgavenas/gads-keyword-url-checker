@@ -49,7 +49,8 @@ var CONFIG = {
   REQUEST_TIMEOUT: 20,
 
   // How many URLs to fetch in parallel (UrlFetchApp.fetchAll batch size)
-  BATCH_SIZE: 10,
+  // Lower this (to 3-5) if the target site returns 429 Too Many Requests
+  BATCH_SIZE: 3,
 
   // Filter: only check keywords in campaigns matching this label.
   // Leave empty ('') to check ALL enabled campaigns.
@@ -329,9 +330,15 @@ function fetchUrls(uniqueUrls) {
         muteHttpExceptions: true,
         followRedirects:  true,
         headers: {
-          'User-Agent':       CONFIG.USER_AGENT,
-          'Accept-Language':  CONFIG.ACCEPT_LANGUAGE,
-          'Accept':           'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent':                CONFIG.USER_AGENT,
+          'Accept-Language':           CONFIG.ACCEPT_LANGUAGE,
+          'Accept':                    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Upgrade-Insecure-Requests': '1',
+          'Cache-Control':             'max-age=0',
+          'Sec-Fetch-Dest':            'document',
+          'Sec-Fetch-Mode':            'navigate',
+          'Sec-Fetch-Site':            'none',
+          'Sec-Fetch-User':            '?1',
         },
       });
     }
@@ -349,7 +356,7 @@ function fetchUrls(uniqueUrls) {
     }
 
     Logger.log('Checked ' + Math.min(i + CONFIG.BATCH_SIZE, total) + ' / ' + total + ' URLs');
-    if (i + CONFIG.BATCH_SIZE < total) Utilities.sleep(1000);
+    if (i + CONFIG.BATCH_SIZE < total) Utilities.sleep(2000);
   }
 
   return results;
